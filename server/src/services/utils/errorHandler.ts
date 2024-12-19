@@ -1,4 +1,4 @@
-import { IError } from "../interfaces/error.interface";
+import { IError } from "@services/interfaces/error.interface";
 
 export abstract class CustomError extends Error {
   abstract status: string;

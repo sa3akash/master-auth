@@ -3,8 +3,9 @@
   "version": "1.0.0",
   "main": "dist/index.js",
   "scripts": {
-    "dev": "nodemon -L src/index.ts",
-    "build": "tsc"
+    "dev": "nodemon -L -r tsconfig-paths/register src/index.ts",
+    "build:dist": "tsc --project tsconfig.json && tsc-alias -p tsconfig.json",
+    "build": "rimraf ./dist && yarn build:dist"
   },
   "keywords": [],
   "author": "",
@@ -23,16 +24,21 @@
     "jsonwebtoken": "^9.0.2",
     "mongoose": "^8.9.2",
     "qrcode": "^1.5.4",
-    "speakeasy": "^2.0.0"
+    "speakeasy": "^2.0.0",
+    "zod": "^3.24.1"
   },
   "devDependencies": {
+    "@types/bcryptjs": "^2.4.6",
     "@types/compression": "^1.7.5",
     "@types/cookie-parser": "^1.4.8",
     "@types/cors": "^2.8.17",
     "@types/express": "^5.0.0",
     "@types/hpp": "^0.2.6",
+    "@types/jsonwebtoken": "^9.0.7",
     "nodemon": "^3.1.9",
     "ts-node": "^10.9.2",
+    "tsc-alias": "^1.8.10",
+    "tsconfig-paths": "^4.2.0",
     "typescript": "^5.7.2"
   }
 }
