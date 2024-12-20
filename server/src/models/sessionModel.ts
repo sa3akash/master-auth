@@ -12,13 +12,23 @@ const SessionSchema = new Schema<ISessionDocument>(
     userAgent: {
       type: String,
     },
+    ipAddress: {
+      type: String,
+    },
+    isOnline: {
+      type: Boolean,
+    },
+    resticted: {
+      type: Boolean,
+      default: false,
+    },
     expiredAt: {
       type: Date,
       required: true,
       default: thirtyDaysFromNow,
     },
   },
-  { timestamps: true }
+  { timestamps: true, versionKey: false }
 );
 
 export default model("Session", SessionSchema, "Session");

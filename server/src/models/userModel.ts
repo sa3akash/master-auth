@@ -41,6 +41,7 @@ const userSchema = new mongoose.Schema<IUserDocument>(
   },
   {
     timestamps: true,
+    versionKey: false,
     toJSON: {
       transform(_doc, ret) {
         delete ret.password;

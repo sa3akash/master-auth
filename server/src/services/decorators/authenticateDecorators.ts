@@ -20,7 +20,7 @@ export function authenticate(...roles: Role[]): MethodDecorator {
           throw new BadRequestError("Unauthorized: No token provided", 400);  
         }  
 
-        const tokenUser = jwtService.verifyToken(token);  
+        const tokenUser = await jwtService.verifyToken(token);  
         if (!tokenUser) {  
           throw new BadRequestError("Unauthorized: Invalid token", 401);  
         }  
@@ -41,10 +41,12 @@ export function authenticate(...roles: Role[]): MethodDecorator {
         // Call the original method with the updated context  
         return await originalMethod.apply(this, args);  
       } catch (error) {  
-        if (error instanceof BadRequestError) {  
-          return next(error);  
-        }  
-        next(new BadRequestError("Unauthorized: Invalid or expired token", 401));  
+        // if (error instanceof BadRequestError) {  
+        //   return next(error);  
+        // }  
+        // next();  
+
+        throw new BadRequestError("Unauthorized: Invalid or expired token", 401)
       }  
     };  
 

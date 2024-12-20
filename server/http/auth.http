@@ -1,0 +1,47 @@
+@hostname = localhost
+@port = 5500
+@host = {{hostname}}:{{port}}
+@accessToken = eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6IjY3NjQ3MjQzYTMwNzIzODE4ZGRhYjI0MiIsInNlc3Npb25JZCI6IjY3NjQ5NzI0NWZhODg2MmQ1ZmJmZWUwYSIsImlhdCI6MTczNDY0NTU5MiwiZXhwIjoxNzM0NjQ5MTkyfQ.SsAkkKf1gxsPZE-vSQcRdvt38fw365bNlpG-iaOqxKs
+@refreshToken = eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzZXNzaW9uSWQiOiI2NzY0OTcyNDVmYTg4NjJkNWZiZmVlMGEiLCJpYXQiOjE3MzQ2NDU1OTIsImV4cCI6MTczNzIzNzU5Mn0.vvl0r4WAaaWBgLZ7Gsw07EA35Oo1igEoen3Ak0jeLAQ
+@contentType = application/json
+
+
+
+###
+POST http://{{host}}/api/v1/signup HTTP/1.1
+Content-Type: {{contentType}}
+
+{
+  "name": "john_doe",
+  "email": "john_doe@example.com",
+  "password": "password123"
+}
+
+
+###
+POST http://{{host}}/api/v1/signin HTTP/1.1
+Content-Type: {{contentType}}
+
+{
+  "email": "john_doe@example.com",
+  "password": "password123"
+}
+
+###
+POST http://{{host}}/api/v1/refresh HTTP/1.1
+Content-Type: {{contentType}}
+Authorization: Bearer {{refreshToken}}
+
+{}
+
+###
+POST http://{{host}}/api/v1/logout HTTP/1.1
+Content-Type: {{contentType}}
+
+{}
+
+
+###
+GET http://{{host}}/api/v1/sessions HTTP/1.1
+Content-Type: {{contentType}}
+Authorization: Bearer {{accessToken}}

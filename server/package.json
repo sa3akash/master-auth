@@ -13,6 +13,7 @@
   "description": "",
   "dependencies": {
     "bcryptjs": "^2.4.3",
+    "bull": "^4.16.5",
     "compression": "^1.7.5",
     "cookie-parser": "^1.4.7",
     "cors": "^2.8.5",
@@ -21,11 +22,11 @@
     "express-async-errors": "^3.1.1",
     "helmet": "^8.0.0",
     "hpp": "^0.2.3",
+    "joi": "^17.13.3",
     "jsonwebtoken": "^9.0.2",
     "mongoose": "^8.9.2",
     "qrcode": "^1.5.4",
-    "speakeasy": "^2.0.0",
-    "zod": "^3.24.1"
+    "speakeasy": "^2.0.0"
   },
   "devDependencies": {
     "@types/bcryptjs": "^2.4.6",

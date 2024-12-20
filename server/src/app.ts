@@ -34,12 +34,12 @@ export class SetupApplication {
         origin: [config.CLIENT_URL!],
         credentials: true,
         optionsSuccessStatus: 200,
-        allowedHeaders: [
-          "Origin",
-          "X-Requested-With",
-          "Content-Type",
-          "Authorization",
-        ],
+        // allowedHeaders: [
+        //   "Origin",
+        //   "X-Requested-With",
+        //   "Content-Type",
+        //   "Authorization",
+        // ],
       })
     );
   }

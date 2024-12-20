@@ -29,8 +29,12 @@ export interface IUser {
 }
 
 export interface ISessionDocument extends Document {
+  _id?: string;
   userId: ObjectId;
+  isOnline: boolean;
   userAgent?: string;
+  resticted: boolean;
+  ipAddress?: string;
   expiredAt: Date;
   createdAt?: Date;
 }
@@ -39,6 +43,14 @@ export interface IVerificationCodeDocument extends Document {
   userId: ObjectId;
   code: string;
   type: VerificationEnum;
+  ipAddress?: string;
   expiresAt: Date;
   createdAt: Date;
+}
+
+
+export interface IRegisterData {
+  name: string;
+  email: string;
+  password: string;
 }

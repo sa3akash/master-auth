@@ -17,6 +17,9 @@ const verificationCodeSchema = new Schema<IVerificationCodeDocument>(
       required: true,
       default: `${sixDigitNumber}`,
     },
+    ipAddress: {
+      type: String,
+    },
     type: {
       type: String,
       required: true,
@@ -26,7 +29,7 @@ const verificationCodeSchema = new Schema<IVerificationCodeDocument>(
       required: true,
     },
   },
-  { timestamps: true }
+  { timestamps: true,versionKey: false }
 );
 
 export default model<IVerificationCodeDocument>(
