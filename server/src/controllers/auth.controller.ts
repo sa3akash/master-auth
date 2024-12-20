@@ -1,5 +1,5 @@
 import sessionModel from "@models/sessionModel";
-import verificationModel from "@models/verificationModel";
+import userModel from "@models/userModel";
 import { authService } from "@services/db/authService";
 import {
   authenticateRefresh,
@@ -10,7 +10,11 @@ import { VerificationEnum } from "@services/interfaces/enum";
 import { emailTemplates } from "@services/mailers/templates";
 import { authQueue } from "@services/queues/authQueue";
 import { emailQueue } from "@services/queues/emailQueue";
-import { signinSchema, signupSchema, verifyEmailSchema } from "@services/schemas/auth.schema";
+import {
+  signinSchema,
+  signupSchema,
+  verifyEmailSchema,
+} from "@services/schemas/auth.schema";
 import { thirtyDaysFromNow } from "@services/utils/date-time";
 import { BadRequestError } from "@services/utils/errorHandler";
 import { jwtService } from "@services/utils/jwt";
@@ -26,13 +30,11 @@ export class AuthController {
       throw new BadRequestError("Email already in use", 400);
     }
 
-    const newUser = await authService.createUser({ email, name, password });
-
-    // todo: send verification email link to your email
+    authQueue.registerUserInDB("addAuthDataInDB", { email, name, password });
 
     res.status(201).json({
-      message: "User registration successful.",
-      user: newUser,
+      message: "Check your mailbox and verify your account.",
+      email: email,
     });
   }
 
@@ -42,8 +44,13 @@ export class AuthController {
     const userAgent = req.headers["user-agent"];
 
     const user = await authService.getUserByEmail(email);
+
     if (!user || !(await user.comparePassword(password))) {
       throw new BadRequestError("Invalid credentials", 400);
+    }
+
+    if (!user.emailVerified) {
+      throw new BadRequestError("Email not verified", 403);
     }
 
     const ip =
@@ -62,7 +69,7 @@ export class AuthController {
       {
         upsert: true,
         new: true,
-        runValidators: true,
+        // runValidators: true,
       }
     );
 
@@ -77,18 +84,14 @@ export class AuthController {
       sessionId: session?._id!,
     });
 
-    // todo: send verification email link to your email
-
     // test email
-    const template: string = emailTemplates.twoFaVerification();
+    const template: string = emailTemplates.newLogin();
 
-    emailQueue.sendEmail('sendEmail', {
-      receiverEmail:user.email, 
-      template, 
-      subject: '2FA Verification Email'
-    })
-
-    // todo: send sussess
+    emailQueue.sendEmail("sendEmail", {
+      receiverEmail: user?.email,
+      template,
+      subject: "Login a new device",
+    });
 
     res.status(200).json({
       message: "Login successful.",
@@ -124,43 +127,39 @@ export class AuthController {
 
   @joiValidation(verifyEmailSchema)
   async verifyEmail(req: Request, res: Response) {
-    const {code,email} = req.body;
+    const { code, email } = req.body;
 
     const user = await authService.getUserByEmail(email);
 
-    if(!user){
+    if (!user) {
       throw new BadRequestError("Invalid user", 400);
     }
 
-
-    if(user?.emailVerified){
+    if (user?.emailVerified) {
       throw new BadRequestError("You are already varified", 400);
     }
 
     const codeDocument = await authService.getVerification({
       code,
       id: user._id!,
-      type: VerificationEnum.EMAIL_VERIFICATION
+      type: VerificationEnum.EMAIL_VERIFICATION,
     });
 
-    if(!codeDocument){
+    if (!codeDocument) {
       throw new BadRequestError("Invalid verification code", 400);
     }
 
-    if(codeDocument.expiresAt.getTime() <= Date.now()){
+    if (codeDocument.expiresAt.getTime() <= Date.now()) {
       throw new BadRequestError("Verification code expired", 400);
     }
 
-    authQueue.verifyEamil('verifyEmail',{
-      id:user._id!
-    })
-
+    authQueue.verifyEamil("verifyEmail", {
+      id: user._id!,
+    });
 
     res.status(200).json({
       message: "Email verified successfully",
-    })
-
-
+    });
   }
   @authenticateSession()
   async logOut(req: Request, res: Response) {
@@ -196,7 +195,7 @@ export class AuthController {
       userId,
     });
 
-    console.log(req.sessionId)
+    console.log(req.sessionId);
 
     const formated = allSession.map((session) => ({
       ...session.toJSON(),

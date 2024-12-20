@@ -28,6 +28,11 @@ const userSchema = new mongoose.Schema<IUserDocument>(
     },
     emailVerified: {
       type: Date,
+      default: null,
+    },
+    profilePicture: {
+      type: String,
+      default: null,
     },
     role: {
       type: String,

@@ -5,10 +5,9 @@ export interface IUserDocument extends Document {
   _id?: string;
   profilePicture?: string;
   name: string;
-  username: string;
   role: 'ADMIN' | 'MANAGER'| 'USER';
   email: string;
-  emailVerified?: Date;
+  emailVerified: Date;
   userPreferences: IUserPreferences;
 
   password: string;

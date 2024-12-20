@@ -46,6 +46,9 @@ export function authenticateSession(...roles: Role[]): MethodDecorator {
       }
 
       const currentUser = sessionInDB?.userId as unknown as IUserDocument;
+      if (!currentUser.emailVerified) {
+        throw new BadRequestError("Email not verified", 403);
+      }
 
       req.user = currentUser;
       req.sessionId = tokenUser.sessionId;

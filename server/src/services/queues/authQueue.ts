@@ -5,7 +5,7 @@ class AuthQueue extends BaseQueue {
   constructor() {
     super("authQueue");
     this.processJob('addAuthDataInDB', 5, authWorker.registerUser);
-    this.processJob('verifyEmail', 5, authWorker.registerUser);
+    this.processJob('verifyEmail', 5, authWorker.emailVerify);
   }
 
   public registerUserInDB(name: string, data: any): void {
