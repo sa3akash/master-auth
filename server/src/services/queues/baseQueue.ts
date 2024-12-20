@@ -25,7 +25,6 @@ export abstract class BaseQueue {
   }
 
   protected processJob(name: string, concurrency: number, callback: Queue.ProcessCallbackFunction<void>): void {
-    console.log('name',name)
     this.queue.process(name, concurrency, callback);
   }
 }

@@ -36,4 +36,20 @@ const signinSchema: ObjectSchema = Joi.object().keys({
   })
 });
 
-export { signupSchema,signinSchema };
+
+const verifyEmailSchema: ObjectSchema = Joi.object().keys({
+
+  code: Joi.string().required().messages({
+    'string.base': 'Code must be of type string.',
+    'string.min': 'Invalid Code.',
+    'string.max': 'Invalid Code.',
+    'string.empty': 'Code is a required field.'
+  }),
+  email: Joi.string().required().email().messages({
+    'string.base': 'Email must be of type string.',
+    'string.email': 'Email must be valid.',
+    'string.empty': 'Email is a required field.'
+  })
+});
+
+export { signupSchema,signinSchema,verifyEmailSchema };

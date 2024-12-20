@@ -1,12 +1,16 @@
 import sessionModel from "@models/sessionModel";
+import verificationModel from "@models/verificationModel";
 import { authService } from "@services/db/authService";
 import {
   authenticateRefresh,
   authenticateSession,
 } from "@services/decorators/authenticateSessionDecorators";
 import { joiValidation } from "@services/decorators/joiValidationDecorators";
+import { VerificationEnum } from "@services/interfaces/enum";
+import { emailTemplates } from "@services/mailers/templates";
 import { authQueue } from "@services/queues/authQueue";
-import { signinSchema, signupSchema } from "@services/schemas/auth.schema";
+import { emailQueue } from "@services/queues/emailQueue";
+import { signinSchema, signupSchema, verifyEmailSchema } from "@services/schemas/auth.schema";
 import { thirtyDaysFromNow } from "@services/utils/date-time";
 import { BadRequestError } from "@services/utils/errorHandler";
 import { jwtService } from "@services/utils/jwt";
@@ -73,6 +77,19 @@ export class AuthController {
       sessionId: session?._id!,
     });
 
+    // todo: send verification email link to your email
+
+    // test email
+    const template: string = emailTemplates.twoFaVerification();
+
+    emailQueue.sendEmail('sendEmail', {
+      receiverEmail:user.email, 
+      template, 
+      subject: '2FA Verification Email'
+    })
+
+    // todo: send sussess
+
     res.status(200).json({
       message: "Login successful.",
       user,
@@ -103,6 +120,47 @@ export class AuthController {
       accessToken,
       refreshToken,
     });
+  }
+
+  @joiValidation(verifyEmailSchema)
+  async verifyEmail(req: Request, res: Response) {
+    const {code,email} = req.body;
+
+    const user = await authService.getUserByEmail(email);
+
+    if(!user){
+      throw new BadRequestError("Invalid user", 400);
+    }
+
+
+    if(user?.emailVerified){
+      throw new BadRequestError("You are already varified", 400);
+    }
+
+    const codeDocument = await authService.getVerification({
+      code,
+      id: user._id!,
+      type: VerificationEnum.EMAIL_VERIFICATION
+    });
+
+    if(!codeDocument){
+      throw new BadRequestError("Invalid verification code", 400);
+    }
+
+    if(codeDocument.expiresAt.getTime() <= Date.now()){
+      throw new BadRequestError("Verification code expired", 400);
+    }
+
+    authQueue.verifyEamil('verifyEmail',{
+      id:user._id!
+    })
+
+
+    res.status(200).json({
+      message: "Email verified successfully",
+    })
+
+
   }
   @authenticateSession()
   async logOut(req: Request, res: Response) {
