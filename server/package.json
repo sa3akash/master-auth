@@ -40,6 +40,8 @@
     "@types/hpp": "^0.2.6",
     "@types/jsonwebtoken": "^9.0.7",
     "@types/nodemailer": "^6.4.17",
+    "@types/qrcode": "^1.5.5",
+    "@types/speakeasy": "^2.0.10",
     "nodemon": "^3.1.9",
     "ts-node": "^10.9.2",
     "tsc-alias": "^1.8.10",

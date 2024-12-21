@@ -53,11 +53,24 @@ export class AuthController {
       throw new BadRequestError("Invalid credentials", 400);
     }
 
-    if (!user.emailVerified) {
-   
-      emailQueue.sendVerificationCode('sendVerificationCode',{id: `${user._id}`})
+    // await userModel.findByIdAndDelete(user._id);
 
+    if (!user.emailVerified) {
+      emailQueue.sendVerificationCode("sendVerificationCode", {
+        id: `${user._id}`,
+      });
       throw new BadRequestError("Email not verified", 403);
+    }
+
+    if (user.userPreferences.enable2FA) {
+      res.status(200).json({
+        message: "Check your authenticator app for 2FA authentication",
+        user: null,
+        accessToken: "",
+        refreshToken: "",
+        mfaRequired: true,
+      });
+      return;
     }
 
     const ip =
@@ -85,7 +98,7 @@ export class AuthController {
         id: user._id!,
         sessionId: session?._id!,
       },
-      "1h"
+      "1d"
     );
     const refreshToken = jwtService.signToken({
       sessionId: session?._id!,
@@ -105,9 +118,9 @@ export class AuthController {
       user,
       accessToken,
       refreshToken,
-      mfaRequired: false,
     });
   }
+
   @authenticateRefresh()
   async refreshTokenGenerate(req: Request, res: Response) {
     const session = await sessionModel.findByIdAndUpdate(req.sessionId, {
@@ -276,14 +289,14 @@ export class AuthController {
 
     await verificationModel.findByIdAndDelete(codeDocument._id);
 
-        // test email
-        const template: string = emailTemplates.didYouChangePassword();
+    // test email
+    const template: string = emailTemplates.didYouChangePassword();
 
-        emailQueue.sendEmail("sendEmail", {
-          receiverEmail: user?.email,
-          template,
-          subject: "Did you change your password?",
-        });
+    emailQueue.sendEmail("sendEmail", {
+      receiverEmail: user?.email,
+      template,
+      subject: "Did you change your password?",
+    });
 
     res.status(200).json({
       message: "Password reset successful",

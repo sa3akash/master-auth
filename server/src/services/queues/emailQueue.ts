@@ -7,6 +7,7 @@ class EmailQueue extends BaseQueue {
     super("emailQueue");
     this.processJob('sendEmail', 5, emailWorker.addNotificationEmail);
     this.processJob('sendVerificationCode', 5, emailWorker.sendVerificationEmail);
+    this.processJob('sendVerification2FACode', 5, emailWorker.sendVerification2FA);
   }
 
   public sendEmail(name: string, data: any): void {

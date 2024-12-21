@@ -9,7 +9,10 @@ class MfaRoutes {
     }
 
     public routes(){
-        this.router.post('/setup', MFAController.prototype.generate);
+        this.router.post('/mfa/setup', MFAController.prototype.generate);
+        this.router.post('/mfa/verify', MFAController.prototype.verify);
+        this.router.post('/mfa/verify-2fa', MFAController.prototype.login2FA);
+        this.router.post('/mfa/off', MFAController.prototype.off2FA);
 
         return this.router;
     }
