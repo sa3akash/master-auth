@@ -56,7 +56,6 @@ class AuthWorker {
       job.progress(100);
       done(null, job.data);
     } catch (err) {
-      console.log(err);
       done(err as Error);
     }
   }

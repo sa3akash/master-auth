@@ -215,8 +215,6 @@ export class AuthController {
       userId,
     });
 
-    console.log(req.sessionId);
-
     const formated = allSession.map((session) => ({
       ...session.toJSON(),
       ...(`${session._id}` === `${req.sessionId}` ? { won: true } : {}),
