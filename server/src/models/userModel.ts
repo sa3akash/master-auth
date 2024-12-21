@@ -8,7 +8,7 @@ import bcrypt from 'bcryptjs';
 const userPreferencesSchema = new mongoose.Schema<IUserPreferences>({
   enable2FA: { type: Boolean, default: false },
   emailNotification: { type: Boolean, default: true },
-  twoFactorSecret: { type: String, required: false },
+  twoFactorSecret: { type: String, default: null},
 });
 
 const userSchema = new mongoose.Schema<IUserDocument>(

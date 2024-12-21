@@ -1,5 +1,6 @@
 import sessionModel from "@models/sessionModel";
 import userModel from "@models/userModel";
+import verificationModel from "@models/verificationModel";
 import { authService } from "@services/db/authService";
 import {
   authenticateRefresh,
@@ -11,10 +12,13 @@ import { emailTemplates } from "@services/mailers/templates";
 import { authQueue } from "@services/queues/authQueue";
 import { emailQueue } from "@services/queues/emailQueue";
 import {
+  forgotSchema,
+  resetSchema,
   signinSchema,
   signupSchema,
   verifyEmailSchema,
 } from "@services/schemas/auth.schema";
+import { generateRandomToken } from "@services/utils/common";
 import { thirtyDaysFromNow } from "@services/utils/date-time";
 import { BadRequestError } from "@services/utils/errorHandler";
 import { jwtService } from "@services/utils/jwt";
@@ -50,6 +54,9 @@ export class AuthController {
     }
 
     if (!user.emailVerified) {
+   
+      emailQueue.sendVerificationCode('sendVerificationCode',{id: `${user._id}`})
+
       throw new BadRequestError("Email not verified", 403);
     }
 
@@ -85,7 +92,7 @@ export class AuthController {
     });
 
     // test email
-    const template: string = emailTemplates.newLogin();
+    const template: string = emailTemplates.newLogin(email);
 
     emailQueue.sendEmail("sendEmail", {
       receiverEmail: user?.email,
@@ -175,7 +182,7 @@ export class AuthController {
   }
   @authenticateSession()
   async deleteSession(req: Request, res: Response) {
-    const { sessionId } = req.body;
+    const { sessionId } = req.params;
 
     if (sessionId === req.sessionId) {
       throw new BadRequestError("Can't delete your own session", 400);
@@ -205,6 +212,81 @@ export class AuthController {
     res.status(200).json({
       message: "Sessions successful.",
       sessions: formated,
+    });
+  }
+
+  @joiValidation(forgotSchema)
+  async forgotPassword(req: Request, res: Response) {
+    const { email } = req.body;
+
+    const user = await authService.getUserByEmail(email);
+
+    if (!user) {
+      throw new BadRequestError("User not found", 400);
+    }
+    const verificationDoc = await verificationModel.create({
+      userId: user._id,
+      code: generateRandomToken(60),
+      type: VerificationEnum.PASSWORD_RESET,
+      expiresAt: new Date(Date.now() + 30 * 60 * 1000),
+    });
+
+    // test email
+    const template: string = emailTemplates.verifyEmail(
+      `http://localhost:3000/reset-password/${verificationDoc.code}`
+    );
+
+    emailQueue.sendEmail("sendEmail", {
+      receiverEmail: user?.email,
+      template,
+      subject: "Forgot Password Code",
+    });
+
+    res.status(200).json({
+      message: "Check your mailbox for the forgot password code",
+    });
+  }
+
+  @joiValidation(resetSchema)
+  async resetPassword(req: Request, res: Response) {
+    const { code, password } = req.body;
+    const codeDocument = await verificationModel.findOne({
+      code: code,
+      type: VerificationEnum.PASSWORD_RESET,
+    });
+    if (!codeDocument) {
+      throw new BadRequestError("Invalid verification code", 400);
+    }
+
+    if (codeDocument.expiresAt.getTime() <= Date.now()) {
+      throw new BadRequestError("Verification code expired", 400);
+    }
+
+    const user = await userModel.findById(`${codeDocument.userId}`);
+
+    if (!user) {
+      throw new BadRequestError("User not found", 400);
+    }
+
+    const hash = await user.hashPassword(password);
+
+    await userModel.findByIdAndUpdate(user._id, {
+      password: hash,
+    });
+
+    await verificationModel.findByIdAndDelete(codeDocument._id);
+
+        // test email
+        const template: string = emailTemplates.didYouChangePassword();
+
+        emailQueue.sendEmail("sendEmail", {
+          receiverEmail: user?.email,
+          template,
+          subject: "Did you change your password?",
+        });
+
+    res.status(200).json({
+      message: "Password reset successful",
     });
   }
 }

@@ -1,11 +1,9 @@
 import userModel from "@models/userModel";
 import { authService } from "@services/db/authService";
-import { IRegisterData } from "@services/interfaces/user.interface";
 import { emailTemplates } from "@services/mailers/templates";
 import { DoneCallback, Job } from "bull";
 import { emailQueue } from "../emailQueue";
 import verificationModel from "@models/verificationModel";
-import { generateSixDigitNumber } from "@services/utils/common";
 import { VerificationEnum } from "@services/interfaces/enum";
 
 class AuthWorker {
@@ -19,19 +17,8 @@ class AuthWorker {
 
       const newUser = await authService.createUser(data);
 
-      const verificationDoc = await authService.createVerification({
-        userId: `${newUser?._id}`,
-      });
-
-      // test email
-      const template: string = emailTemplates.emailWithCode(
-        verificationDoc.code
-      );
-
-      emailQueue.sendEmail("sendEmail", {
-        receiverEmail: newUser?.email,
-        template,
-        subject: "Email Verification Code",
+      emailQueue.sendVerificationCode("sendVerificationCode", {
+        id: `${newUser?._id}`,
       });
 
       job.progress(100);

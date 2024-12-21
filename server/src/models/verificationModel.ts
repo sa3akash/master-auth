@@ -1,8 +1,6 @@
 import { IVerificationCodeDocument } from "@services/interfaces/user.interface";
-import { generateSixDigitNumber } from "@services/utils/common";
 import { model, Schema } from "mongoose";
 
-const sixDigitNumber = generateSixDigitNumber();
 
 const verificationCodeSchema = new Schema<IVerificationCodeDocument>(
   {
@@ -15,7 +13,7 @@ const verificationCodeSchema = new Schema<IVerificationCodeDocument>(
     code: {
       type: String,
       required: true,
-      default: `${sixDigitNumber}`,
+      unique: true,
     },
     ipAddress: {
       type: String,
