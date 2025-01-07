@@ -1,7 +1,7 @@
 import Joi, { ObjectSchema } from "joi";
 
 const signupSchema: ObjectSchema = Joi.object().keys({
-  name: Joi.string().required().min(3).max(8).messages({
+  name: Joi.string().required().min(3).max(80).messages({
     "string.base": "First name must be of type string.",
     "string.min": "First name must be 3 charecters.",
     "string.max": "First name must be less then 8 charecters.",

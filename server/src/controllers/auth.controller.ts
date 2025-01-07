@@ -113,6 +113,9 @@ export class AuthController {
       subject: "Login a new device",
     });
 
+    res.cookie('accessToken',accessToken,{httpOnly:true})
+    res.cookie('refreshToken',refreshToken,{httpOnly:true})
+
     res.status(200).json({
       message: "Login successful.",
       user,
@@ -244,7 +247,7 @@ export class AuthController {
 
     // test email
     const template: string = emailTemplates.verifyEmail(
-      `http://localhost:3000/reset-password/${verificationDoc.code}`
+      `http://localhost:3000/reset-password?token=${verificationDoc.code}`
     );
 
     emailQueue.sendEmail("sendEmail", {
@@ -283,6 +286,7 @@ export class AuthController {
 
     await userModel.findByIdAndUpdate(user._id, {
       password: hash,
+      emailVerified: Date.now()
     });
 
     await verificationModel.findByIdAndDelete(codeDocument._id);

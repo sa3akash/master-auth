@@ -45,8 +45,8 @@ POST http://{{host}}/api/v1/email-verify HTTP/1.1
 Content-Type: {{contentType}}
 
 {
-	"email": "john_doe@example.com",
-	"code":"268179"
+	"email": "sa2@gmail.com",
+	"code":"690695"
 }
 
 

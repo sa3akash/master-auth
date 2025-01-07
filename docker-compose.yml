@@ -1,0 +1,27 @@
+name: master-auth
+
+services:
+  mongo:
+    image: mongo
+    ports:
+      - 27017:27017
+    # environment:
+    #   MONGO_INITDB_ROOT_USERNAME: root
+    #   MONGO_INITDB_ROOT_PASSWORD: example
+    volumes:
+      - mongodb:/etc/mongo
+  redis:
+    image: redis/redis-stack:latest
+    ports:
+      - 6379:6379
+      - 8001:8001
+    # environment:
+    #   - REDIS_ARGS="--requirepass redis-stack"
+    volumes:
+      - local-data:/data
+
+volumes:
+  mongodb:
+    driver: local
+  local-data:
+    driver: local
