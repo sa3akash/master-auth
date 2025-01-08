@@ -11,6 +11,8 @@ import sessionModel from "@models/sessionModel";
 import { thirtyDaysFromNow } from "@services/utils/date-time";
 import { jwtService } from "@services/utils/jwt";
 
+
+
 export class MFAController {
   @authenticateSession()
   async generate(req: Request, res: Response) {
@@ -142,6 +144,9 @@ export class MFAController {
     const refreshToken = jwtService.signToken({
       sessionId: session?._id!,
     });
+
+    res.cookie('accessToken',accessToken,{httpOnly:true})
+    res.cookie('refreshToken',refreshToken,{httpOnly:true})
 
     res.status(200).json({
       message: "Login successful.",

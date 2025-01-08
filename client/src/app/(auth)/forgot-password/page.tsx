@@ -94,7 +94,7 @@ export default function ForgotPassword() {
                   )}
                 />
               </div>
-              <Button className="w-full text-[15px] h-[40px] text-white font-semibold">
+              <Button className="w-full text-[15px] h-[40px] font-semibold">
                 Send reset instructions
               </Button>
             </form>

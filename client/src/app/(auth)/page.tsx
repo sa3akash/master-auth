@@ -19,6 +19,7 @@ import { signin } from "@/lib/api";
 import { AxiosError } from "axios";
 import { useToast } from "@/hooks/use-toast";
 import { useRouter } from "next/navigation";
+import { useAuth } from "@/context/auth-provider";
 
 export default function Login() {
   const formSchema = z.object({
@@ -30,8 +31,9 @@ export default function Login() {
     }),
   });
 
-  const {toast} = useToast()
-  const router = useRouter()
+  const { toast } = useToast();
+  const router = useRouter();
+  const { setUser } = useAuth();
 
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
@@ -43,14 +45,23 @@ export default function Login() {
 
   const onSubmit = async (values: z.infer<typeof formSchema>) => {
     try {
-      const {data} = await signin(values)
+      const { data } = await signin(values);
       toast({
         variant: "default",
         title: data.message,
       });
-      router.push('/home');
+
+      if (data?.mfaRequired) {
+        router.push(`/verify-mfa?email=${values.email}`);
+      } else {
+        setUser(data?.user);
+        toast({
+          variant: "default",
+          title: data.message,
+        });
+      }
     } catch (error) {
-      if(error instanceof AxiosError){
+      if (error instanceof AxiosError) {
         toast({
           variant: "destructive",
           title: error.response?.data.message,
@@ -111,15 +122,12 @@ export default function Login() {
               />
             </div>
             <div className="mb-4 flex w-full items-center justify-end">
-              <Link
-                className="text-sm dark:text-white"
-                href="/forgot-password"
-              >
+              <Link className="text-sm dark:text-white" href="/forgot-password">
                 Forgot your password?
               </Link>
             </div>
             <Button
-              className="w-full text-[15px] h-[40px] text-white font-semibold"
+              className="w-full text-[15px] h-[40px] font-semibold"
               type="submit"
             >
               Sign in

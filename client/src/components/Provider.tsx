@@ -1,5 +1,6 @@
 import React, { PropsWithChildren } from "react";
 import { ThemeProvider } from "./theme-provider";
+import { AuthProvider } from "@/context/auth-provider";
 
 const Provider = ({ children }: PropsWithChildren) => {
   return (
@@ -10,7 +11,7 @@ const Provider = ({ children }: PropsWithChildren) => {
         enableSystem={false}
         disableTransitionOnChange
       >
-        {children}
+        <AuthProvider>{children}</AuthProvider>
       </ThemeProvider>
     </>
   );

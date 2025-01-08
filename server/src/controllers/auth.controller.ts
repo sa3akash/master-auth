@@ -192,6 +192,9 @@ export class AuthController {
       expiredAt: Date.now(),
     });
 
+    res.clearCookie('accessToken')
+    res.clearCookie('refreshToken')
+
     res.status(200).json({
       message: "Logout successful.",
     });
@@ -227,6 +230,11 @@ export class AuthController {
       message: "Sessions successful.",
       sessions: formated,
     });
+  }
+
+  @authenticateSession()
+  async getCurrentUser(req: Request, res: Response) {
+    res.status(200).json(req.user);
   }
 
   @joiValidation(forgotSchema)

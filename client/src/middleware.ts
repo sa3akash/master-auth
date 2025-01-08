@@ -1,16 +1,10 @@
-import { NextRequest } from "next/server";
-
-const publicRoutes = ["/landing"];
-const authRoutes = [
-  "/",
-  "/signup",
-  "/forgot-password",
-  "/confirm-account",
-  "/reset-password",
-  "/verify-mfa",
-];
-const DEFAULT_Logged_Redirect = "/home";
-const apiAuthPrefix = "/api";
+import { NextRequest, NextResponse } from "next/server";
+import {
+  apiAuthPrefix,
+  authRoutes,
+  DEFAULT_Logged_Redirect,
+  publicRoutes,
+} from "./routes";
 
 export function middleware(req: NextRequest) {
   const { nextUrl } = req;
@@ -18,24 +12,25 @@ export function middleware(req: NextRequest) {
 
   const isApiAuthRoutes = nextUrl.pathname.startsWith(apiAuthPrefix);
   const isAuthRoute = authRoutes.includes(nextUrl.pathname);
+
   const isPublicRoutes = publicRoutes.includes(nextUrl.pathname);
 
   if (isApiAuthRoutes) {
-    return undefined;
+    return NextResponse.next();
   }
 
   if (isAuthRoute) {
     if (isLoggedIn) {
       return Response.redirect(new URL(DEFAULT_Logged_Redirect, nextUrl));
     }
-    return undefined;
+    return NextResponse.next();
   }
 
   if (!isLoggedIn && !isPublicRoutes) {
     return Response.redirect(new URL("/", nextUrl));
   }
 
-  return undefined;
+  return NextResponse.next();
 }
 
 export const config = {
