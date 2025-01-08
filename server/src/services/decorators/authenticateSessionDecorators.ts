@@ -33,7 +33,7 @@ export function authenticateSession(...roles: Role[]): MethodDecorator {
       const sessionInDB = await sessionModel
         .findOne({
           _id: tokenUser.sessionId,
-          userAgent: req.headers["user-agent"],
+          // userAgent: req.headers["user-agent"],
         })
         .populate("userId");
 

@@ -59,6 +59,9 @@ export default function Login() {
           variant: "default",
           title: data.message,
         });
+
+        router.push('/home')
+        router.refresh()
       }
     } catch (error) {
       if (error instanceof AxiosError) {
@@ -129,6 +132,7 @@ export default function Login() {
             <Button
               className="w-full text-[15px] h-[40px] font-semibold"
               type="submit"
+              disabled={form.formState.isSubmitting}
             >
               Sign in
               <ArrowRight />

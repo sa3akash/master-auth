@@ -154,10 +154,10 @@ const VerifyMfa = () => {
                                 )}
                             />
                             <Button
-                                disabled={form.formState.isLoading}
+                                disabled={form.formState.isSubmitting}
                                 className="w-full h-[40px] mt-2"
                             >
-                                {form.formState.isLoading && (
+                                {form.formState.isSubmitting && (
                                     <Loader className="animate-spin" />
                                 )}
                                 Continue

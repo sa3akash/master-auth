@@ -94,7 +94,7 @@ export default function ForgotPassword() {
                   )}
                 />
               </div>
-              <Button className="w-full text-[15px] h-[40px] font-semibold">
+              <Button className="w-full text-[15px] h-[40px] font-semibold" disabled={form.formState.isSubmitting}>
                 Send reset instructions
               </Button>
             </form>

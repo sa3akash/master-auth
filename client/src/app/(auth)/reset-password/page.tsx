@@ -132,7 +132,7 @@ export default function ResetPassword() {
                 />
               </div>
 
-              <Button className="w-full text-[15px] h-[40px] text-white font-semibold">
+              <Button className="w-full text-[15px] h-[40px] text-white font-semibold" disabled={form.formState.isSubmitting}>
                 Update password
               </Button>
             </form>

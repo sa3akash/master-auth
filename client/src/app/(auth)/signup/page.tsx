@@ -149,6 +149,7 @@ export default function SignUp() {
                 <Button
                   className="w-full text-[15px] h-[40px] !bg-blue-500 text-white font-semibold"
                   type="submit"
+                  disabled={form.formState.isSubmitting}
                 >
                   Create account
                   <ArrowRight />

@@ -9,6 +9,7 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import {
   Dialog,
   DialogContent,
+  DialogDescription,
   DialogHeader,
   DialogTitle,
   DialogTrigger,
@@ -42,7 +43,6 @@ type MFAType = {
 
 const EnableMfa = () => {
   const [showKey, setShowKey] = useState(false);
-  const [isOpen, setIsOpen] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [copied, setCopied] = useState(false);
   const [mfaData, setMfaData] = useState<MFAType>();
@@ -106,8 +106,10 @@ const EnableMfa = () => {
   }, []);
 
   useEffect(() => {
-    setUpMFa();
-  }, [setUpMFa]);
+    if (!user?.userPreferences.enable2FA) {
+      setUpMFa();
+    }
+  }, [setUpMFa, user?.userPreferences.enable2FA]);
 
   return (
     <div className="via-root to-root rounded-xl bg-gradient-to-r p-0.5">
@@ -132,7 +134,7 @@ const EnableMfa = () => {
         {user?.userPreferences?.enable2FA ? (
           <RevokeMfa />
         ) : (
-          <Dialog modal open={isOpen} onOpenChange={setIsOpen}>
+          <Dialog modal>
             <DialogTrigger asChild>
               <Button disabled={false} className="h-[35px]">
                 Enable MFA
@@ -143,12 +145,7 @@ const EnableMfa = () => {
                 <DialogTitle className="text-[17px] text-slate-12 font-semibold">
                   Setup Multi-Factor Authentication
                 </DialogTitle>
-              </DialogHeader>
-              <div className="">
-                <p className="mt-6 text-sm text-[#0007149f] dark:text-inherit font-bold">
-                  Scan the QR code
-                </p>
-                <span className="text-sm text-[#0007149f] dark:text-inherit font-normal">
+                <DialogDescription>
                   Use an app like{" "}
                   <a
                     className="!text-primary underline decoration-primary decoration-1 underline-offset-2 transition duration-200 ease-in-out hover:decoration-blue-11 dark:text-current dark:decoration-slate-9 dark:hover:decoration-current "
@@ -168,9 +165,14 @@ const EnableMfa = () => {
                     Google Authenticator
                   </a>{" "}
                   to scan the QR code below.
-                </span>
+                </DialogDescription>
+              </DialogHeader>
+              <div className="">
+                <p className="mt-6 text-sm text-[#0007149f] dark:text-inherit font-bold">
+                  Scan the QR code
+                </p>
               </div>
-              <div className="mt-4 flex flex-row items-center gap-4">
+              <div className="mt-4 flex flex-col md:flex-row items-center gap-4">
                 <div className=" shrink-0 rounded-md border p-2  border-[#0009321f] dark:border-gray-600 bg-white">
                   {isLoading || !mfaData?.qrcodeImage ? (
                     <Skeleton className="w-[160px] h-[160px]" />

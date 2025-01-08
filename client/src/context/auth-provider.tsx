@@ -1,4 +1,3 @@
-/* eslint-disable @typescript-eslint/no-explicit-any */
 "use client";
 
 import { getCurrent } from "@/lib/api";
@@ -51,12 +50,11 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
 
   const pathname = usePathname();
 
-  console.log(!publicRoutes.includes(pathname))
-
   const getSession = useCallback(async () => {
     try {
       const { data } = await getCurrent();
       setUser(data);
+      return data
     } catch (error) {
       console.log(error);
 
@@ -70,7 +68,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
   }, [pathname, router]);
 
   useEffect(() => {
-    getSession();
+    getSession()
   }, [getSession]);
 
   return (

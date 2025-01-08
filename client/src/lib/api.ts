@@ -16,3 +16,4 @@ export const getCurrent = () => api.get("/current");
 export const mfaSetup = () => api.post("/mfa/setup", {});
 export const mfaVerify = (data:any) => api.post("/mfa/verify", data);
 export const mfa2faLogin = (data:any) => api.post("/mfa/verify-2fa", data);
+export const mfaOff= () => api.post("/mfa/off", {});
