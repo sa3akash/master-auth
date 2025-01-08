@@ -14,13 +14,15 @@ interface UserAgentDetails {
   };
   device: {
     model: string | null;
-    type: string | null;
+    type: "Mobile" | "Desktop" | "Tablet" | null;
     vendor: string | null;
     series: string | null; // Series for devices like iPhone 14, Galaxy S21
   };
   cpu: {
     architecture: string | null;
   };
+  isMobile: boolean;
+  isDesktop: boolean;
 }
 
 export function parseUserAgent(userAgent: string): UserAgentDetails {
@@ -38,7 +40,7 @@ export function parseUserAgent(userAgent: string): UserAgentDetails {
   const vendorMatch = userAgent.match(vendorRegex);
   const cpuMatch = userAgent.match(cpuRegex);
 
-  // Improved series detection for OS
+  // Detect OS series
   let osSeries: string | null = null;
   if (osMatch) {
     if (osMatch[1].includes("Windows NT")) {
@@ -51,17 +53,45 @@ export function parseUserAgent(userAgent: string): UserAgentDetails {
       };
       osSeries = versionMap[osMatch[2]] || null;
     } else if (osMatch[1].includes("Mac OS X")) {
-      osSeries = osMatch[1].replace("Mac OS X", "macOS");
+      const macVersion = osMatch[2]?.replace(/_/g, ".") || "";
+      osSeries = `macOS ${macVersion}`; // Example: macOS 12.5
+    } else if (osMatch[1] === "iOS") {
+      const iosVersion = osMatch[2]?.replace(/_/g, ".") || "";
+      osSeries = `iOS ${iosVersion}`; // Example: iOS 16.2
     } else {
       osSeries = osMatch[1];
     }
   }
 
-  // Custom logic to determine "series" for devices (e.g., iPhone series or other devices)
+  // Detect device series
   let deviceSeries: string | null = null;
   if (deviceMatch) {
-    const seriesMatch = deviceMatch[0].match(/(iPhone|Galaxy\s[^;]+)/);
-    deviceSeries = seriesMatch ? seriesMatch[0] : null;
+    if (/iPhone/.test(deviceMatch[0])) {
+      deviceSeries = "iPhone"; // Could expand this to include model detection
+    } else if (/Galaxy/.test(deviceMatch[0])) {
+      const galaxyMatch = deviceMatch[0].match(/Galaxy [^;]+/);
+      deviceSeries = galaxyMatch ? galaxyMatch[0] : "Galaxy";
+    } else if (/iPad|iPod/.test(deviceMatch[0])) {
+      deviceSeries = deviceMatch[0]; // iPad or iPod directly
+    } else {
+      deviceSeries = deviceMatch[0];
+    }
+  }
+
+  // Determine device type (mobile, desktop, tablet)
+  let deviceType: "Mobile" | "Desktop" | "Tablet" | null = null;
+  const isMobile =
+    /iPhone|Android|Windows Phone|webOS|BlackBerry/i.test(userAgent);
+  const isTablet = /iPad/i.test(userAgent);
+  const isDesktop =
+    !isMobile && !isTablet && /Macintosh|PC|Windows NT|Linux|Chrome OS/i.test(userAgent);
+
+  if (isMobile) {
+    deviceType = "Mobile";
+  } else if (isTablet) {
+    deviceType = "Tablet";
+  } else if (isDesktop) {
+    deviceType = "Desktop";
   }
 
   return {
@@ -75,17 +105,20 @@ export function parseUserAgent(userAgent: string): UserAgentDetails {
     },
     os: {
       name: osMatch ? osMatch[1] : null,
-      version: osMatch ? osMatch[2].replace(/_/g, '.') : null,
+      version: osMatch ? osMatch[2].replace(/_/g, ".") : null,
       series: osSeries,
     },
     device: {
       model: deviceMatch ? deviceMatch[0] : null,
-      type: deviceMatch ? (deviceMatch[0] === "Macintosh" || deviceMatch[0] === "PC" ? "desktop" : "mobile") : null,
+      type: deviceType,
       vendor: vendorMatch ? vendorMatch[1] : null,
       series: deviceSeries,
     },
     cpu: {
       architecture: cpuMatch ? cpuMatch[1] : null,
     },
+    isMobile,
+    isDesktop,
   };
 }
+

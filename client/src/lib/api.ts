@@ -17,3 +17,5 @@ export const mfaSetup = () => api.post("/mfa/setup", {});
 export const mfaVerify = (data:any) => api.post("/mfa/verify", data);
 export const mfa2faLogin = (data:any) => api.post("/mfa/verify-2fa", data);
 export const mfaOff= () => api.post("/mfa/off", {});
+export const getSessions = () => api.get("/sessions");
+export const deleteSessionById = (id:string) => api.delete(`/session/${id}`,{});

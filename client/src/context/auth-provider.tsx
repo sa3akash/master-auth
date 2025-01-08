@@ -54,7 +54,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
     try {
       const { data } = await getCurrent();
       setUser(data);
-      return data
+      return data;
     } catch (error) {
       console.log(error);
 
@@ -68,8 +68,10 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
   }, [pathname, router]);
 
   useEffect(() => {
-    getSession()
-  }, [getSession]);
+    if (!user) {
+      getSession();
+    }
+  }, [getSession, user]);
 
   return (
     <AuthContext.Provider

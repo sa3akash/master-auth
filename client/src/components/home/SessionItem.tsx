@@ -1,14 +1,31 @@
 import React from "react";
 import { ComputerIcon, Trash2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { parseUserAgent } from "@/lib/ua2";
+import { timeAgo } from "@/lib/utils";
+
+export interface ISessionDocument {
+  _id: string;
+  userId: string;
+  isOnline: boolean;
+  userAgent: string;
+  resticted: boolean;
+  ipAddress: string;
+  expiredAt: string;
+  updatedAt:string;
+  won?: boolean;
+}
 
 const SessionItem = (props: {
-  id: string;
-  deviceName: string;
-  date: string;
-  isCurrent?: boolean;
+  session: ISessionDocument;
+  sessionDelete: (id: string) => void;
 }) => {
-  const { id, deviceName, date, isCurrent = false } = props;
+  const { _id, userAgent,ipAddress, updatedAt, won = false } = props.session;
+
+  const details = parseUserAgent(userAgent);
+
+  console.log(details)
+
   return (
     <div className="w-full flex items-center ">
       <div
@@ -19,12 +36,14 @@ const SessionItem = (props: {
       </div>
       <div className="flex-1 flex items-center justify-between">
         <div className="flex-1">
-          <h5 className="text-sm font-medium leading-1">{deviceName}</h5>
+          <h5 className="text-sm font-medium leading-1">
+             {details.isMobile ? `${details.device.series} - ${ipAddress}` : `${details.os.series} - ${ipAddress} - ${details.browser.name} (${details.browser.version})`}
+          </h5>
           <div className="flex items-center">
             <span className="mr-[16px] text-[13px] text-muted-foreground font-normal">
-              {date}
+              {timeAgo(updatedAt)}
             </span>
-            {isCurrent && (
+            {won && (
               <div
                 className="bg-green-500/80 h-[20px] px-2 w-[81px] 
               flex items-center justify-center text-xs text-white rounded-lg"
@@ -35,8 +54,12 @@ const SessionItem = (props: {
           </div>
         </div>
 
-        {!isCurrent && (
-          <Button variant="ghost" size="icon">
+        {!won && (
+          <Button
+            variant="ghost"
+            size="icon"
+            onClick={() => props.sessionDelete(_id)}
+          >
             <Trash2 size="29px" />
           </Button>
         )}

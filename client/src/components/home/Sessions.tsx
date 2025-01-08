@@ -1,7 +1,71 @@
-import React from "react";
-import SessionItem from "./SessionItem";
+"use client";
+
+import React, { useEffect, useState } from "react";
+import SessionItem, { ISessionDocument } from "./SessionItem";
+import { deleteSessionById, getSessions } from "@/lib/api";
+import { AxiosError } from "axios";
+import { useToast } from "@/hooks/use-toast";
 
 const Sessions = () => {
+  const [sessions, setSessions] = useState<ISessionDocument[]>([]);
+
+  const { toast } = useToast();
+
+  useEffect(() => {
+    const getAll = async () => {
+      try {
+        const { data } = await getSessions();
+        setSessions(data.sessions);
+      } catch (error) {
+        console.log(error);
+      }
+    };
+    getAll();
+  }, []);
+
+
+  const [onlineItems, offlineItems] = sessions
+    .reduce(
+      (
+        acc: [ISessionDocument[], ISessionDocument[]],
+        item: ISessionDocument
+      ) => {
+        if (item.isOnline) {
+          acc[0].push(item);
+        } else {
+          acc[1].push(item);
+        }
+        return acc;
+      },
+      [[], []]
+    )
+    .map((array) => {
+      const wonItemIndex = array.findIndex((item) => item.won);
+      if (wonItemIndex !== -1) {
+        const [wonItem] = array.splice(wonItemIndex, 1);
+        array.unshift(wonItem);
+      }
+      return array;
+    });
+
+  const delelteSession = async (id: string) => {
+    try {
+      const { data } = await deleteSessionById(id);
+      setSessions((prev) => prev.filter((i) => i._id !== id));
+      toast({
+        variant: "default",
+        title: data.message,
+      });
+    } catch (error) {
+      if (error instanceof AxiosError) {
+        toast({
+          variant: "destructive",
+          title: error.response?.data.message,
+        });
+      }
+    }
+  };
+
   return (
     <div className="via-root to-root rounded-xl bg-gradient-to-r p-0.5">
       <div className="rounded-[10px] p-6">
@@ -24,22 +88,28 @@ const Sessions = () => {
           </div>
           <div className="w-full">
             <div className="w-full py-2 border-b pb-5">
-              <SessionItem
-                id=""
-                deviceName="Windows"
-                date="22 hours ago"
-                isCurrent={true}
-              />
+              <ul className="mb-2 flex flex-col gap-2">
+                {onlineItems.map((item, i) => (
+                  <li key={i}>
+                    <SessionItem
+                      session={item}
+                      sessionDelete={delelteSession}
+                    />
+                  </li>
+                ))}
+              </ul>
             </div>
             <div className="mt-4">
               <h5 className="text-base font-semibold">Other sessions</h5>
-              <ul className="mt-4">
-                <li>
-                  <SessionItem id="" deviceName="Android" date="22 hours ago" />
-                </li>
-                <li>
-                  <SessionItem id="" deviceName="Android" date="22 hours ago" />
-                </li>
+              <ul className="mt-4 flex flex-col gap-2">
+                {offlineItems.map((item, i) => (
+                  <li key={i}>
+                    <SessionItem
+                      session={item}
+                      sessionDelete={delelteSession}
+                    />
+                  </li>
+                ))}
               </ul>
             </div>
           </div>

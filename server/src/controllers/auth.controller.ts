@@ -210,7 +210,7 @@ export class AuthController {
     await sessionModel.findByIdAndDelete(sessionId);
 
     res.status(200).json({
-      message: "Logout successful.",
+      message: "Session deleted successfull",
     });
   }
   @authenticateSession()
