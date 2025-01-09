@@ -1,8 +1,8 @@
 "use client";
 
 import { getCurrent } from "@/lib/api";
-import { publicRoutes } from "@/routes";
-import { usePathname, useRouter } from "next/navigation";
+import { AxiosError } from "axios";
+import { useRouter } from "next/navigation";
 import React, {
   createContext,
   useCallback,
@@ -48,24 +48,22 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
 
   const router = useRouter();
 
-  const pathname = usePathname();
-
   const getSession = useCallback(async () => {
     try {
       const { data } = await getCurrent();
       setUser(data);
-      return data;
     } catch (error) {
-      console.log(error);
-
-      if (!publicRoutes.includes(pathname)) {
-        router.push("/");
-        router.refresh();
+      if(error instanceof AxiosError){
+        if (error.response?.data.statusCode === 401) {
+          router.push("/");
+          router.refresh();
+          
+        }
       }
     } finally {
       setIsLoading(false);
     }
-  }, [pathname, router]);
+  }, [router]);
 
   useEffect(() => {
     if (!user) {

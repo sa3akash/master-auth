@@ -38,11 +38,11 @@ export function authenticateSession(...roles: Role[]): MethodDecorator {
         .populate("userId");
 
       if (!sessionInDB) {
-        throw new BadRequestError("Unauthorized: User not found", 404);
+        throw new BadRequestError("Unauthorized: User not found", 401);
       }
 
       if (sessionInDB.resticted) {
-        throw new BadRequestError("Unauthorized: Please login back!", 404);
+        throw new BadRequestError("Unauthorized: Please login back!", 400);
       }
 
       const currentUser = sessionInDB?.userId as unknown as IUserDocument;

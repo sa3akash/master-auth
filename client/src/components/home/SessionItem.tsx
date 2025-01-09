@@ -12,7 +12,7 @@ export interface ISessionDocument {
   resticted: boolean;
   ipAddress: string;
   expiredAt: string;
-  updatedAt:string;
+  updatedAt: string;
   won?: boolean;
 }
 
@@ -20,11 +20,16 @@ const SessionItem = (props: {
   session: ISessionDocument;
   sessionDelete: (id: string) => void;
 }) => {
-  const { _id, userAgent,ipAddress, updatedAt, won = false } = props.session;
+  const {
+    _id,
+    userAgent,
+    ipAddress,
+    isOnline,
+    updatedAt,
+    won = false,
+  } = props.session;
 
   const details = parseUserAgent(userAgent);
-
-  console.log(details)
 
   return (
     <div className="w-full flex items-center ">
@@ -37,20 +42,24 @@ const SessionItem = (props: {
       <div className="flex-1 flex items-center justify-between">
         <div className="flex-1">
           <h5 className="text-sm font-medium leading-1">
-             {details.isMobile ? `${details.device.series} - ${ipAddress}` : `${details.os.series} - ${ipAddress} - ${details.browser.name} (${details.browser.version})`}
+            {details.isMobile
+              ? `${details.device.series} - ${ipAddress}`
+              : `${details.os.series} - ${ipAddress} - ${details.browser.name} (${details.browser.version})`}
           </h5>
           <div className="flex items-center">
             <span className="mr-[16px] text-[13px] text-muted-foreground font-normal">
               {timeAgo(updatedAt)}
             </span>
-            {won && (
+
+            {isOnline && (
               <div
-                className="bg-green-500/80 h-[20px] px-2 w-[81px] 
+                className="bg-green-500/80 h-[20px] px-2 w-max
               flex items-center justify-center text-xs text-white rounded-lg"
               >
-                Active now
+                {won ? "Your current session" : "Active now"}
               </div>
             )}
+            
           </div>
         </div>
 
