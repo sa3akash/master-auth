@@ -1,5 +1,5 @@
 
-import { BadRequestError } from '@services/utils/errorHandler';
+import { ServerError } from 'error-express';
 import { Request } from 'express';
 import { ObjectSchema } from 'joi';
 
@@ -13,7 +13,7 @@ export function joiValidation(schema: ObjectSchema): IJoiDecorator {
       const req: Request = args[0];
       const { error } = await Promise.resolve(schema.validate(req.body));
       if (error?.details) {
-        throw new BadRequestError(error.details[0].message,400)
+        throw new ServerError(error.details[0].message,400)
       }
       return originalMethod.apply(this, args);
     };

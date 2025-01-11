@@ -2,8 +2,8 @@ import sessionModel from "@models/sessionModel";
 import userModel from "@models/userModel";
 import { Role } from "@services/interfaces/enum";
 import { IUserDocument } from "@services/interfaces/user.interface";
-import { BadRequestError, CustomError } from "@services/utils/errorHandler";
 import { jwtService } from "@services/utils/jwt";
+import { ServerError } from "error-express";
 import { NextFunction, Request, Response } from "express";
 import { JsonWebTokenError } from "jsonwebtoken";
 
@@ -22,12 +22,12 @@ export function authenticateSession(...roles: Role[]): MethodDecorator {
         req.headers.authorization?.split(" ")[1] || req.cookies?.accessToken;
 
       if (!token) {
-        throw new BadRequestError("Unauthorized: No token provided", 400);
+        throw new ServerError("Unauthorized: No token provided", 400);
       }
 
       const tokenUser = await jwtService.verifyToken(token);
       if (!tokenUser.sessionId) {
-        throw new BadRequestError("Unauthorized: Invalid token", 400);
+        throw new ServerError("Unauthorized: Invalid token", 400);
       }
 
       const sessionInDB = await sessionModel
@@ -38,23 +38,23 @@ export function authenticateSession(...roles: Role[]): MethodDecorator {
         .populate("userId");
 
       if (!sessionInDB) {
-        throw new BadRequestError("Unauthorized: User not found", 401);
+        throw new ServerError("Unauthorized: User not found", 401);
       }
 
       if (sessionInDB.resticted) {
-        throw new BadRequestError("Unauthorized: Please login back!", 400);
+        throw new ServerError("Unauthorized: Please login back!", 400);
       }
 
       const currentUser = sessionInDB?.userId as unknown as IUserDocument;
       if (!currentUser.emailVerified) {
-        throw new BadRequestError("Email not verified", 403);
+        throw new ServerError("Email not verified", 403);
       }
 
       req.user = currentUser;
       req.sessionId = tokenUser.sessionId;
 
       if (roles.length > 0 && !roles.includes(currentUser.role)) {
-        throw new BadRequestError("Forbidden: Insufficient permissions", 403); // Use 403 for forbidden access
+        throw new ServerError("Forbidden: Insufficient permissions", 403); // Use 403 for forbidden access
       }
 
       // Call the original method with the updated context
@@ -79,16 +79,16 @@ export function authenticateRefresh(...roles: Role[]): MethodDecorator {
         req.headers.authorization?.split(" ")[1] || req.cookies?.refreshToken;
 
       if (!token) {
-        throw new BadRequestError("Unauthorized: No token provided", 400);
+        throw new ServerError("Unauthorized: No token provided", 400);
       }
 
       const tokenUser = await jwtService.verifyToken(token);
       if (!tokenUser.sessionId) {
-        throw new BadRequestError("Unauthorized: Invalid token", 400);
+        throw new ServerError("Unauthorized: Invalid token", 400);
       }
 
       if (tokenUser?.id) {
-        throw new BadRequestError("Please provide valid token", 400);
+        throw new ServerError("Please provide valid token", 400);
       }
 
       const sessionInDB = await sessionModel
@@ -99,15 +99,15 @@ export function authenticateRefresh(...roles: Role[]): MethodDecorator {
         .populate("userId");
 
       if (!sessionInDB) {
-        throw new BadRequestError("Unauthorized: User not found", 404);
+        throw new ServerError("Unauthorized: User not found", 404);
       }
 
       if (sessionInDB.resticted) {
-        throw new BadRequestError("Unauthorized: Please login back!", 404);
+        throw new ServerError("Unauthorized: Please login back!", 404);
       }
 
       if (sessionInDB.expiredAt.getTime() <= Date.now()) {
-        throw new BadRequestError("Session expire", 404);
+        throw new ServerError("Session expire", 404);
       }
 
       const currentUser = sessionInDB?.userId as unknown as IUserDocument;
@@ -116,7 +116,7 @@ export function authenticateRefresh(...roles: Role[]): MethodDecorator {
       req.sessionId = tokenUser.sessionId;
 
       if (roles.length > 0 && !roles.includes(currentUser.role)) {
-        throw new BadRequestError("Forbidden: Insufficient permissions", 403); // Use 403 for forbidden access
+        throw new ServerError("Forbidden: Insufficient permissions", 403); // Use 403 for forbidden access
       }
 
       // Call the original method with the updated context

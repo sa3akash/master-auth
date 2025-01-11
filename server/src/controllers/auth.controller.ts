@@ -20,8 +20,8 @@ import {
 } from "@services/schemas/auth.schema";
 import { generateRandomToken } from "@services/utils/common";
 import { thirtyDaysFromNow } from "@services/utils/date-time";
-import { BadRequestError } from "@services/utils/errorHandler";
 import { jwtService } from "@services/utils/jwt";
+import { ServerError } from "error-express";
 import { Request, Response } from "express";
 
 export class AuthController {
@@ -31,7 +31,7 @@ export class AuthController {
 
     const existingUser = await authService.getUserByEmail(email);
     if (existingUser) {
-      throw new BadRequestError("Email already in use", 400);
+      throw new ServerError("Email already in use", 400);
     }
 
     authQueue.registerUserInDB("addAuthDataInDB", { email, name, password });
@@ -50,7 +50,7 @@ export class AuthController {
     const user = await authService.getUserByEmail(email);
 
     if (!user || !(await user.comparePassword(password))) {
-      throw new BadRequestError("Invalid credentials", 400);
+      throw new ServerError("Invalid credentials", 400);
     }
 
     // await userModel.findByIdAndDelete(user._id);
@@ -59,7 +59,7 @@ export class AuthController {
       emailQueue.sendVerificationCode("sendVerificationCode", {
         id: `${user._id}`,
       });
-      throw new BadRequestError("Email not verified", 403);
+      throw new ServerError("Email not verified", 403);
     }
 
     if (user.userPreferences.enable2FA) {
@@ -155,11 +155,11 @@ export class AuthController {
     const user = await authService.getUserByEmail(email);
 
     if (!user) {
-      throw new BadRequestError("Invalid user", 400);
+      throw new ServerError("Invalid user", 400);
     }
 
     if (user?.emailVerified) {
-      throw new BadRequestError("You are already varified", 400);
+      throw new ServerError("You are already varified", 400);
     }
 
     const codeDocument = await authService.getVerification({
@@ -169,11 +169,11 @@ export class AuthController {
     });
 
     if (!codeDocument) {
-      throw new BadRequestError("Invalid verification code", 400);
+      throw new ServerError("Invalid verification code", 400);
     }
 
     if (codeDocument.expiresAt.getTime() <= Date.now()) {
-      throw new BadRequestError("Verification code expired", 400);
+      throw new ServerError("Verification code expired", 400);
     }
 
     authQueue.verifyEamil("verifyEmail", {
@@ -204,7 +204,7 @@ export class AuthController {
     const { sessionId } = req.params;
 
     if (sessionId === req.sessionId) {
-      throw new BadRequestError("Can't delete your own session", 400);
+      throw new ServerError("Can't delete your own session", 400);
     }
 
     await sessionModel.findByIdAndDelete(sessionId);
@@ -244,7 +244,7 @@ export class AuthController {
     const user = await authService.getUserByEmail(email);
 
     if (!user) {
-      throw new BadRequestError("User not found", 400);
+      throw new ServerError("User not found", 400);
     }
     const verificationDoc = await verificationModel.create({
       userId: user._id,
@@ -277,17 +277,17 @@ export class AuthController {
       type: VerificationEnum.PASSWORD_RESET,
     });
     if (!codeDocument) {
-      throw new BadRequestError("Invalid verification code", 400);
+      throw new ServerError("Invalid verification code", 400);
     }
 
     if (codeDocument.expiresAt.getTime() <= Date.now()) {
-      throw new BadRequestError("Verification code expired", 400);
+      throw new ServerError("Verification code expired", 400);
     }
 
     const user = await userModel.findById(`${codeDocument.userId}`);
 
     if (!user) {
-      throw new BadRequestError("User not found", 400);
+      throw new ServerError("User not found", 400);
     }
 
     const hash = await user.hashPassword(password);

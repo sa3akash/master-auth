@@ -1,6 +1,6 @@
 import { config } from "@root/config";
+import { ServerError } from "error-express";
 import jwt from "jsonwebtoken";
-import { BadRequestError } from "./errorHandler";
 
 class JWTService {
   public signToken(data: { id?: string; sessionId: string }, expire?: string) {
@@ -17,7 +17,7 @@ class JWTService {
     return new Promise((resolve, reject) => {
       jwt.verify(token, config.JWT_SEC!, (err, user) => {
         if (err) {
-          return reject(new BadRequestError(err.message, 401));
+          return reject(new ServerError(err.message, 401));
         }
         resolve(user as { id: string; sessionId: string });
       });

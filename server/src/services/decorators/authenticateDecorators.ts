@@ -1,8 +1,8 @@
 import sessionModel from "@models/sessionModel";  
 import userModel from "@models/userModel";  
 import { Role } from "@services/interfaces/enum";  
-import { BadRequestError } from "@services/utils/errorHandler";  
 import { jwtService } from "@services/utils/jwt";  
+import { ServerError } from "error-express";
 import { NextFunction, Request, Response } from "express";  
 
 export function authenticate(...roles: Role[]): MethodDecorator {  
@@ -17,36 +17,36 @@ export function authenticate(...roles: Role[]): MethodDecorator {
           req.headers.authorization?.split(" ")[1] || req.cookies?.accessToken;  
 
         if (!token) {  
-          throw new BadRequestError("Unauthorized: No token provided", 400);  
+          throw new ServerError("Unauthorized: No token provided", 400);  
         }  
 
         const tokenUser = await jwtService.verifyToken(token);  
         if (!tokenUser) {  
-          throw new BadRequestError("Unauthorized: Invalid token", 401);  
+          throw new ServerError("Unauthorized: Invalid token", 401);  
         }  
 
         const userInDB = await userModel.findById(tokenUser.id);  
 
         if (!userInDB) {  
-          throw new BadRequestError("Unauthorized: User not found", 404);  
+          throw new ServerError("Unauthorized: User not found", 404);  
         }  
 
         req.user = userInDB;  
         req.sessionId = tokenUser.sessionId;  
 
         if (roles.length > 0 && !roles.includes(userInDB.role)) {  
-          throw new BadRequestError("Forbidden: Insufficient permissions", 403); // Use 403 for forbidden access  
+          throw new ServerError("Forbidden: Insufficient permissions", 403); // Use 403 for forbidden access  
         }  
 
         // Call the original method with the updated context  
         return await originalMethod.apply(this, args);  
       } catch (error) {  
-        // if (error instanceof BadRequestError) {  
+        // if (error instanceof ServerError) {  
         //   return next(error);  
         // }  
         // next();  
 
-        throw new BadRequestError("Unauthorized: Invalid or expired token", 401)
+        throw new ServerError("Unauthorized: Invalid or expired token", 401)
       }  
     };  
 

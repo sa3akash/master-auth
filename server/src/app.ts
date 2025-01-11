@@ -5,12 +5,12 @@ import hpp from "hpp";
 import helmet from "helmet";
 import cors from "cors";
 import http from "http";
-import "express-async-errors";
+// import "express-async-errors";
+// import 'error-express';
+import { globalErrorHandler } from 'error-express'
 
 import { config } from "@root/config";
 import mainRoutes from "@routes/index";
-import { CustomError } from "@services/utils/errorHandler";
-import { globalErrorHandler } from "@middlewares/globalErrorHandler";
 
 export class SetupApplication {
   private app: Application;

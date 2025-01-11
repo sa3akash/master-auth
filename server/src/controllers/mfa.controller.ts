@@ -5,11 +5,11 @@ import speakeasy from "speakeasy";
 import qrcode from "qrcode";
 import { joiValidation } from "@services/decorators/joiValidationDecorators";
 import { mfaVerifySchema } from "@services/schemas/auth.schema";
-import { BadRequestError } from "@services/utils/errorHandler";
 import { authService } from "@services/db/authService";
 import sessionModel from "@models/sessionModel";
 import { thirtyDaysFromNow } from "@services/utils/date-time";
 import { jwtService } from "@services/utils/jwt";
+import { ServerError } from "error-express";
 
 
 
@@ -19,7 +19,7 @@ export class MFAController {
     const user = req.user;
 
     if (user?.userPreferences.enable2FA) {
-      throw new BadRequestError(
+      throw new ServerError(
         "Two-factor authentication is already enabled.",
         400
       );
@@ -61,7 +61,7 @@ export class MFAController {
     const user = req.user;
 
     if (user?.userPreferences.enable2FA) {
-      throw new BadRequestError(
+      throw new ServerError(
         "Two-factor authentication is already enabled.",
         400
       );
@@ -75,7 +75,7 @@ export class MFAController {
     });
 
     if (!isValid) {
-      throw new BadRequestError("Invalid code.", 400);
+      throw new ServerError("Invalid code.", 400);
     }
 
     await userModel.findByIdAndUpdate(user?._id, {
@@ -95,12 +95,12 @@ export class MFAController {
     const userAgent = req.headers["user-agent"];
 
     if (!code || !email) {
-      throw new BadRequestError("All are is required", 404);
+      throw new ServerError("All are is required", 404);
     }
 
     const user = await authService.getUserByEmail(`${email}`);
     if (!user) {
-      throw new BadRequestError("User not found", 404);
+      throw new ServerError("User not found", 404);
     }
 
     const isValid = speakeasy.totp.verify({
@@ -111,7 +111,7 @@ export class MFAController {
     });
 
     if (!isValid) {
-      throw new BadRequestError("Invalid code.", 400);
+      throw new ServerError("Invalid code.", 400);
     }
 
     const ip =
@@ -160,7 +160,7 @@ export class MFAController {
     const user = req.user;
 
     if (!user?.userPreferences.enable2FA) {
-      throw new BadRequestError(
+      throw new ServerError(
         "Two-factor authentication is already disabled.",
         400
       );
